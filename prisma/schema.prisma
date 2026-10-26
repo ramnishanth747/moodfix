@@ -1,0 +1,72 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Movie {
+  id             String          @id @default(uuid())
+  title          String
+  description    String
+  language       String
+  runtime        Int             // Runtime in minutes
+  releaseYear    Int
+  posterUrl      String?
+  backdropUrl    String?
+  trailerUrl     String?
+  rating         Float?          // 0.0 to 10.0
+  featured       Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  // Many-to-Many Relationships
+  genres         Genre[]         @relation("MovieGenres")
+  moodTags       MoodTag[]       @relation("MovieMoods")
+  experienceTags ExperienceTag[] @relation("MovieExperiences")
+
+  // Watchlist items referencing this movie
+  watchlistItems WatchlistItem[]
+
+  @@index([language])
+  @@index([releaseYear])
+}
+
+model Genre {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  movies    Movie[]  @relation("MovieGenres")
+  createdAt DateTime @default(now())
+}
+
+model MoodTag {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  movies    Movie[]  @relation("MovieMoods")
+  createdAt DateTime @default(now())
+}
+
+model ExperienceTag {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  movies    Movie[]  @relation("MovieExperiences")
+  createdAt DateTime @default(now())
+}
+
+enum WatchlistStatus {
+  WANT_TO_WATCH
+  WATCHED
+}
+
+model WatchlistItem {
+  id        String          @id @default(uuid())
+  movieId   String          @unique // Single demo user: a movie can only appear once in watchlist
+  movie     Movie           @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  status    WatchlistStatus @default(WANT_TO_WATCH)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@index([status])
+}
