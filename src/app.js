@@ -5,6 +5,9 @@ const apiRoutes = require('./routes/api');
 
 const app = express();
 
+// Enable reverse proxy support for Render / Cloudflare
+app.set('trust proxy', 1);
+
 // Middlewares
 app.use(cors());
 app.use(express.json());
